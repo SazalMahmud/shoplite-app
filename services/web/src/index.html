@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShopLite</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+    button { cursor: pointer; padding: .4rem .8rem; }
+    #orders li { margin: .3rem 0; }
+    .COMPLETED { color: green; } .PENDING, .PROCESSING { color: orange; } .FAILED { color: red; }
+  </style>
+</head>
+<body>
+  <h1>ShopLite</h1>
+  <h2>Products</h2>
+  <div id="products" class="grid">Loading...</div>
+  <h2>Orders</h2>
+  <ul id="orders"></ul>
+
+  <script>
+    const API = "api";
+
+    async function loadProducts() {
+      const res = await fetch(`${API}/products`);
+      const products = await res.json();
+      document.getElementById("products").innerHTML = products.map(p => `
+        <div class="card">
+          <strong>${p.name}</strong>
+          <div>$${p.price.toFixed(2)} (stock: ${p.stock})</div>
+          <input type="number" id="qty-${p.id}" value="1" min="1" style="width:50px" />
+          <button onclick="order(${p.id})">Order</button>
+        </div>`).join("");
+    }
+
+    async function order(productId) {
+      const quantity = parseInt(document.getElementById(`qty-${productId}`).value, 10);
+      const res = await fetch(`${API}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: productId, quantity })
+      });
+      if (!res.ok) { alert("Order failed: " + res.status); return; }
+      const data = await res.json();
+      const li = document.createElement("li");
+      li.id = `order-${data.id}`;
+      li.innerHTML = `Order #${data.id}: <span class="PENDING">PENDING</span>`;
+      document.getElementById("orders").prepend(li);
+      poll(data.id);
+    }
+
+    async function poll(id) {
+      const res = await fetch(`${API}/orders/${id}`);
+      const o = await res.json();
+      document.getElementById(`order-${id}`).innerHTML =
+        `Order #${id}: <span class="${o.status}">${o.status}</span>`;
+      if (o.status !== "COMPLETED" && o.status !== "FAILED") setTimeout(() => poll(id), 1000);
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

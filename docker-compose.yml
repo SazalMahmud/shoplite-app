@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: shoplite
+      POSTGRES_PASSWORD: shoplite
+      POSTGRES_DB: shoplite
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shoplite -d shoplite"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  catalog-api:
+    build: ./services/catalog-api
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      CHAOS_LATENCY_MS: ${CHAOS_LATENCY_MS:-0}
+      CHAOS_ERROR_RATE: ${CHAOS_ERROR_RATE:-0}
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  order-worker:
+    build: ./services/order-worker
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      CHAOS_MEMORY_LEAK: ${CHAOS_MEMORY_LEAK:-false}
+      CHAOS_SLOW_DB: ${CHAOS_SLOW_DB:-false}
+    depends_on:
+      catalog-api:
+        condition: service_healthy
+
+  web:
+    build: ./services/web
+    ports:
+      - "8080:8080"
+    depends_on:
+      catalog-api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
