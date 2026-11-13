@@ -1,0 +1,11 @@
+[Unit]
+Description=ShopLite nightly PostgreSQL backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+Restart=on-failure
+RestartSec=30
+WorkingDirectory=/home/poridhian/code/shoplite-app
+ExecStart=/bin/bash -c 'docker compose exec -T postgres pg_dump -U shoplite shoplite | gzip > /var/backups/shoplite/shoplite-$(date +%%F-%%H%%M).sql.gz'
