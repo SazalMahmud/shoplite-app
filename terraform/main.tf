@@ -38,3 +38,16 @@ module "ecr" {
 }
 
 output "ecr_repository_urls" { value = module.ecr.repository_urls }
+
+module "compute" {
+  source             = "./modules/compute"
+  name               = "shoplite"
+  vpc_id             = module.network.vpc_id
+  vpc_cidr           = module.network.vpc_cidr
+  private_subnet_ids = module.network.private_subnet_ids
+  instance_type      = "t3.medium"
+  worker_count       = 2
+}
+
+output "control_plane_id" { value = module.compute.control_plane_id }
+output "worker_ids" { value = module.compute.worker_ids }
