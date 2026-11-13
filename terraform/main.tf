@@ -31,3 +31,10 @@ module "network" {
 output "vpc_id" { value = module.network.vpc_id }
 output "public_subnet_ids" { value = module.network.public_subnet_ids }
 output "private_subnet_ids" { value = module.network.private_subnet_ids }
+
+module "ecr" {
+  source       = "./modules/ecr"
+  repositories = ["shoplite/web", "shoplite/catalog-api", "shoplite/order-worker"]
+}
+
+output "ecr_repository_urls" { value = module.ecr.repository_urls }
