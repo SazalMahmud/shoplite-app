@@ -73,6 +73,8 @@ resource "aws_instance" "control_plane" {
   metadata_options {
     http_tokens = "required"
   }
+  user_data = templatefile("${path.module}/scripts/server.sh", { name = var.name })
+  user_data_replace_on_change = true
   tags = { Name = "${var.name}-control-plane", role = "control-plane" }
 }
 
@@ -90,6 +92,8 @@ resource "aws_instance" "worker" {
   metadata_options {
     http_tokens = "required"
   }
+  user_data = templatefile("${path.module}/scripts/agent.sh", { name = var.name, server_ip = aws_instance.control_plane.private_ip })
+  user_data_replace_on_change = true
   tags = { Name = "${var.name}-worker-${count.index + 1}", role = "worker" }
 }
 
@@ -98,3 +102,16 @@ output "control_plane_id" { value = aws_instance.control_plane.id }
 output "worker_ids" { value = aws_instance.worker[*].id }
 output "control_plane_private_ip" { value = aws_instance.control_plane.private_ip }
 output "worker_private_ips" { value = aws_instance.worker[*].private_ip }
+
+resource "aws_iam_role_policy" "k3s_token" {
+  name = "${var.name}-k3s-token"
+  role = aws_iam_role.node.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:PutParameter", "ssm:GetParameter"]
+      Resource = "arn:aws:ssm:*:*:parameter/${var.name}/k3s-token"
+    }]
+  })
+}
