@@ -51,3 +51,14 @@ module "compute" {
 
 output "control_plane_id" { value = module.compute.control_plane_id }
 output "worker_ids" { value = module.compute.worker_ids }
+
+module "alb" {
+  source              = "./modules/alb"
+  name                = "shoplite"
+  vpc_id              = module.network.vpc_id
+  public_subnet_ids   = module.network.public_subnet_ids
+  target_instance_ids = module.compute.worker_ids
+  target_port         = 30080
+}
+
+output "alb_dns_name" { value = module.alb.alb_dns_name }
