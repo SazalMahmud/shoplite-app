@@ -30,6 +30,7 @@ spec:
                   key: DB_PASSWORD
           securityContext:
             runAsNonRoot: true
+            runAsUser: 100
             allowPrivilegeEscalation: false
           resources:
             requests:

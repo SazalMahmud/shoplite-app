@@ -50,6 +50,7 @@ spec:
             initialDelaySeconds: 5
           securityContext:
             runAsNonRoot: true
+            runAsUser: 100
             allowPrivilegeEscalation: false
           resources:
             requests:
