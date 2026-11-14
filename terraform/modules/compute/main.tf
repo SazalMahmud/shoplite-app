@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source                = "hashicorp/aws"
+      configuration_aliases = [aws.notags]
+    }
+  }
+}
+
 variable "name" { type = string }
 variable "vpc_id" { type = string }
 variable "vpc_cidr" { type = string }
@@ -6,6 +15,7 @@ variable "instance_type" { type = string }
 variable "worker_count" { type = number }
 
 resource "aws_iam_role" "node" {
+  provider = aws.notags
   name = "${var.name}-node-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -18,11 +28,13 @@ resource "aws_iam_role" "node" {
 }
 
 resource "aws_iam_role_policy_attachment" "ssm" {
+  provider = aws.notags
   role       = aws_iam_role.node.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "node" {
+  provider = aws.notags
   name = "${var.name}-node-profile"
   role = aws_iam_role.node.name
 }
@@ -111,6 +123,7 @@ output "control_plane_private_ip" { value = aws_instance.control_plane.private_i
 output "worker_private_ips" { value = aws_instance.worker[*].private_ip }
 
 resource "aws_iam_role_policy" "k3s_token" {
+  provider = aws.notags
   name = "${var.name}-k3s-token"
   role = aws_iam_role.node.id
   policy = jsonencode({

@@ -41,7 +41,11 @@ output "ecr_repository_urls" { value = module.ecr.repository_urls }
 
 module "compute" {
   source             = "./modules/compute"
-  name               = "shoplite"
+  providers = {
+    aws        = aws
+    aws.notags = aws.notags
+  }
+  name               = "shoplite2"
   vpc_id             = module.network.vpc_id
   vpc_cidr           = module.network.vpc_cidr
   private_subnet_ids = module.network.private_subnet_ids
@@ -63,18 +67,7 @@ module "alb" {
 
 output "alb_dns_name" { value = module.alb.alb_dns_name }
 
-resource "aws_budgets_budget" "shoplite" {
-  name         = "shoplite-monthly"
-  budget_type  = "COST"
-  limit_amount = "20"
-  limit_unit   = "USD"
-  time_unit    = "MONTHLY"
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 80
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = ["sazalmahmud46@gmail.com"]
-  }
+provider "aws" {
+  alias  = "notags"
+  region = "ap-southeast-1"
 }
