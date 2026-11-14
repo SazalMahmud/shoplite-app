@@ -1,0 +1,20 @@
+registry: 850995533893.dkr.ecr.ap-southeast-1.amazonaws.com/shoplite
+imageTag: latest
+web:
+  replicas: 2
+catalogApi:
+  replicas: 2
+worker:
+  minReplicas: 1
+  maxReplicas: 4
+  cpuTarget: 70
+  terminationGracePeriodSeconds: 30
+chaos:
+  latencyMs: "0"
+  errorRate: "0"
+  memoryLeak: "false"
+  slowDb: "false"
+db:
+  name: shoplite
+  user: shoplite
+  existingSecret: shoplite-db

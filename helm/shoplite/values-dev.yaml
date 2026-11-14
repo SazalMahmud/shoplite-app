@@ -1,0 +1,5 @@
+imageTag: latest
+web:
+  replicas: 1
+catalogApi:
+  replicas: 2
