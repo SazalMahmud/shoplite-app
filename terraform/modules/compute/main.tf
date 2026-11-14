@@ -72,6 +72,7 @@ resource "aws_instance" "control_plane" {
   }
   metadata_options {
     http_tokens = "required"
+    http_put_response_hop_limit = 2
   }
   user_data = templatefile("${path.module}/scripts/server.sh", { name = var.name })
   user_data_replace_on_change = true
@@ -91,6 +92,7 @@ resource "aws_instance" "worker" {
   }
   metadata_options {
     http_tokens = "required"
+    http_put_response_hop_limit = 2
   }
   user_data = templatefile("${path.module}/scripts/agent.sh", { name = var.name, server_ip = aws_instance.control_plane.private_ip })
   user_data_replace_on_change = true
