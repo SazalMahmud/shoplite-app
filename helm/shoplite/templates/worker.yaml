@@ -12,6 +12,7 @@ spec:
       labels:
         app: order-worker
     spec:
+      enableServiceLinks: false
       terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds }}
       containers:
         - name: order-worker

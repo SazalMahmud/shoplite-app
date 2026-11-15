@@ -23,6 +23,7 @@ spec:
       labels:
         app: catalog-api
     spec:
+      enableServiceLinks: false
       containers:
         - name: catalog-api
           image: {{ .Values.registry }}/catalog-api:{{ .Values.imageTag }}
