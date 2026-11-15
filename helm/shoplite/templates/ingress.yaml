@@ -8,7 +8,10 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - {{- if .Values.ingressHost }}
+      host: {{ .Values.ingressHost | quote }}
+      {{- end }}
+      http:
         paths:
           - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
