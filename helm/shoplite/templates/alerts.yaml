@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shoplite-alerts
+spec:
+  groups:
+    - name: shoplite
+      rules:
+        - alert: HighErrorRate
+          expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+          for: 5m
+          labels: { severity: critical }
+          annotations:
+            summary: "5xx rate above 5%"
+            runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/high-error-rate.md
+        - alert: HighLatency
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "p95 latency above 1s"
+            runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/high-latency.md
+        - alert: QueueBacklog
+          expr: max(order_queue_depth) > 50
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "Order queue above 50"
+            runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/queue-backlog.md
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="shoplite"}[10m]) > 0
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "Pod restarting"
+            runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/pod-crashlooping.md
+        - alert: NodeDiskFilling
+          expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) > 0.85
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "Disk above 85%"
+            runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/node-disk-filling.md
