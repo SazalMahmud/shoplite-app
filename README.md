@@ -38,3 +38,9 @@ Repositories: `shoplite-app` (this repo) and `shoplite-gitops`
   removed (a $20 budget was created in an earlier session).
 - Secrets (`shoplite-db`) are created with kubectl and never committed.
 - Remove billable resources after grading with `terraform destroy`.
+
+## Ansible
+`ansible/site.yml` applies the Q3 hardening (users, SSH, UFW, ACL) and
+bootstraps k3s (server, agents, kubeconfig). It was syntax-checked but
+not run against the EC2 nodes, because SSM access was unavailable with
+the lab IAM user.

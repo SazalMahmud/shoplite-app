@@ -1,0 +1,61 @@
+- name: Harden all nodes (Q3 requirements)
+  hosts: all
+  become: true
+  tasks:
+    - name: Create ops group
+      ansible.builtin.group: { name: ops, state: present }
+    - name: Create deploy user
+      ansible.builtin.user: { name: deploy, groups: ops, shell: /bin/bash }
+    - name: Disable root SSH login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: reload ssh
+    - name: Disable password authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify: reload ssh
+    - name: Install ufw and acl
+      ansible.builtin.apt: { name: [ufw, acl], state: present, update_cache: true }
+    - name: Default deny incoming
+      community.general.ufw: { direction: incoming, policy: deny }
+    - name: Allow 22, 80, 443
+      community.general.ufw: { rule: allow, port: "{{ item }}", proto: tcp }
+      loop: ["22", "80", "443"]
+    - name: Enable ufw
+      community.general.ufw: { state: enabled }
+    - name: Log directory for ops group
+      ansible.builtin.file: { path: /var/log/shoplite, state: directory, owner: root, group: ops, mode: "0750" }
+  handlers:
+    - name: reload ssh
+      ansible.builtin.service: { name: ssh, state: reloaded }
+
+- name: k3s server
+  hosts: control
+  become: true
+  tasks:
+    - name: Install k3s server
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable traefik --write-kubeconfig-mode 644" sh -
+      args: { creates: /usr/local/bin/k3s }
+    - name: Read join token
+      ansible.builtin.slurp: { src: /var/lib/rancher/k3s/server/node-token }
+      register: k3s_token
+    - name: Fetch kubeconfig
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: ./kubeconfig
+        flat: true
+
+- name: k3s agents
+  hosts: workers
+  become: true
+  tasks:
+    - name: Join cluster
+      ansible.builtin.shell: >
+        curl -sfL https://get.k3s.io |
+        K3S_URL=https://{{ hostvars['cp'].ansible_host }}:6443
+        K3S_TOKEN={{ hostvars['cp'].k3s_token.content | b64decode | trim }} sh -
+      args: { creates: /usr/local/bin/k3s }
