@@ -1,0 +1,29 @@
+{
+  "title": "ShopLite - Golden Signals",
+  "uid": "shoplite-golden",
+  "schemaVersion": 39,
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    { "id": 1, "type": "timeseries", "title": "p50 latency per route", "gridPos": {"x":0,"y":0,"w":8,"h":8},
+      "targets": [{ "expr": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))" }] },
+    { "id": 2, "type": "timeseries", "title": "p95 latency per route", "gridPos": {"x":8,"y":0,"w":8,"h":8},
+      "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))" }] },
+    { "id": 3, "type": "timeseries", "title": "p99 latency per route", "gridPos": {"x":16,"y":0,"w":8,"h":8},
+      "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))" }] },
+    { "id": 4, "type": "timeseries", "title": "Requests per second", "gridPos": {"x":0,"y":8,"w":8,"h":8},
+      "targets": [{ "expr": "sum(rate(http_requests_total[1m])) by (route)" }] },
+    { "id": 5, "type": "timeseries", "title": "HTTP 5xx error rate", "gridPos": {"x":8,"y":8,"w":8,"h":8},
+      "targets": [{ "expr": "sum(rate(http_requests_total{status=~\"5..\"}[1m])) / sum(rate(http_requests_total[1m]))" }] },
+    { "id": 6, "type": "timeseries", "title": "CPU per pod", "gridPos": {"x":16,"y":8,"w":8,"h":8},
+      "targets": [{ "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"shoplite\"}[5m])) by (pod)" }] },
+    { "id": 7, "type": "timeseries", "title": "Memory per pod", "gridPos": {"x":0,"y":16,"w":8,"h":8},
+      "targets": [{ "expr": "sum(container_memory_working_set_bytes{namespace=\"shoplite\"}) by (pod)" }] },
+    { "id": 8, "type": "timeseries", "title": "Order queue depth", "gridPos": {"x":8,"y":16,"w":8,"h":8},
+      "targets": [{ "expr": "max(order_queue_depth)" }] },
+    { "id": 9, "type": "stat", "title": "Worker replicas", "gridPos": {"x":16,"y":16,"w":4,"h":8},
+      "targets": [{ "expr": "kube_deployment_status_replicas{namespace=\"shoplite\",deployment=\"order-worker\"}" }] },
+    { "id": 10, "type": "timeseries", "title": "Orders created vs processed", "gridPos": {"x":20,"y":16,"w":4,"h":8},
+      "targets": [{ "expr": "sum(rate(orders_created_total[5m]))", "legendFormat": "created" },
+                  { "expr": "sum(rate(orders_processed_total[5m]))", "legendFormat": "processed" }] }
+  ]
+}
