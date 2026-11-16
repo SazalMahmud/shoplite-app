@@ -49,3 +49,8 @@ the lab IAM user.
 `monitoring/dashboards/golden-signals.json` defines the Golden Signals panels
 (latency p50/p95/p99, RPS, 5xx rate, CPU/memory, queue depth, worker replicas,
 orders created vs processed). It was not imported or verified in Grafana.
+
+## Logging and tracing (configuration only)
+`monitoring/logging/` (Loki/Promtail values, Grafana datasource with a trace_id derived field)
+and `monitoring/tracing/` (Tempo values, OpenTelemetry plan) are committed as configuration.
+They were not deployed or verified, and the OpenTelemetry SDK is not in the services.

@@ -1,0 +1,21 @@
+# helm upgrade --install loki grafana/loki-stack -n monitoring -f monitoring/logging/loki-values.yaml
+loki:
+  enabled: true
+  persistence:
+    enabled: false
+promtail:
+  enabled: true
+  config:
+    snippets:
+      pipelineStages:
+        - cri: {}
+        - json:
+            expressions:
+              level: level
+              service: service
+              trace_id: trace_id
+        - labels:
+            level:
+            service:
+grafana:
+  enabled: false

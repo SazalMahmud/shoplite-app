@@ -1,0 +1,11 @@
+# helm upgrade --install tempo grafana/tempo -n monitoring -f monitoring/tracing/tempo-values.yaml
+tempo:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+persistence:
+  enabled: false
