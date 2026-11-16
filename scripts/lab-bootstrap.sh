@@ -20,13 +20,6 @@ for s in web catalog-api order-worker; do
   k3d image import local/$s:dev -c shoplite
 done
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm upgrade --install kps prometheus-community/kube-prometheus-stack \
-  -n monitoring --create-namespace \
-  --set grafana.adminPassword=admin123 \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
-
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 

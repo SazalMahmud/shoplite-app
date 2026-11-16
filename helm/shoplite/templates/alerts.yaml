@@ -1,3 +1,4 @@
+{{- if .Values.monitoring.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -41,3 +42,4 @@ spec:
           annotations:
             summary: "Disk above 85%"
             runbook_url: https://github.com/SazalMahmud/shoplite-app/blob/main/monitoring/runbooks/node-disk-filling.md
+{{- end }}

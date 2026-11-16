@@ -18,3 +18,5 @@ db:
   name: shoplite
   user: shoplite
   existingSecret: shoplite-db
+monitoring:
+  enabled: false
