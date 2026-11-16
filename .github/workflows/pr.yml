@@ -1,0 +1,36 @@
+name: pr
+on:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Unit tests
+        run: cd services/catalog-api && npm ci && npm test
+      - uses: azure/setup-helm@v4
+      - name: helm lint
+        run: helm lint helm/shoplite -f helm/shoplite/values-dev.yaml
+      - name: Build images
+        run: |
+          for s in web catalog-api order-worker; do
+            docker build -t shoplite/$s:pr services/$s
+          done
+      - name: Trivy scan (fail on CRITICAL)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: shoplite/catalog-api:pr
+          severity: CRITICAL
+          exit-code: "1"
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform plan (only if terraform/ changed)
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^terraform/'; then
+            cd terraform && terraform init -backend=false && terraform validate
+          fi
