@@ -54,3 +54,7 @@ orders created vs processed). It was not imported or verified in Grafana.
 `monitoring/logging/` (Loki/Promtail values, Grafana datasource with a trace_id derived field)
 and `monitoring/tracing/` (Tempo values, OpenTelemetry plan) are committed as configuration.
 They were not deployed or verified, and the OpenTelemetry SDK is not in the services.
+
+## Alert rules
+`monitoring/alert-rules/shoplite-alerts.yaml` is a copy of the Helm template
+`helm/shoplite/templates/alerts.yaml` (deployed with `--set monitoring.enabled=true`).
