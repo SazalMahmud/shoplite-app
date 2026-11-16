@@ -44,3 +44,8 @@ Repositories: `shoplite-app` (this repo) and `shoplite-gitops`
 bootstraps k3s (server, agents, kubeconfig). It was syntax-checked but
 not run against the EC2 nodes, because SSM access was unavailable with
 the lab IAM user.
+
+## Dashboard
+`monitoring/dashboards/golden-signals.json` defines the Golden Signals panels
+(latency p50/p95/p99, RPS, 5xx rate, CPU/memory, queue depth, worker replicas,
+orders created vs processed). It was not imported or verified in Grafana.
